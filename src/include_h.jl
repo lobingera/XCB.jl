@@ -37,14 +37,14 @@ const linux = 1
 # typealias ulong Culong
 # typealias ushort Uint16
 # typealias uint Uint32
-# typealias int8_t Uint8
-# typealias int16_t Int16
-# typealias int32_t Cint
-# typealias int64_t Clong
-# typealias u_int8_t Cuchar
-# typealias u_int16_t Uint16
-# typealias u_int32_t Uint32
-# typealias u_int64_t Culong
+typealias int8_t Uint8
+typealias int16_t Int16
+typealias int32_t Cint
+typealias int64_t Clong
+typealias u_int8_t Cuchar
+typealias u_int16_t Uint16
+typealias u_int32_t Uint32
+typealias u_int64_t Culong
 # typealias register_t Clong
 # typealias sigset_t __sigset_t
 
