@@ -2,6 +2,7 @@ module XCB
 
 include("../deps/deps.jl")
 include("include_h.jl")
+include("include_manual.jl")
 
 #this should work at least
 
@@ -56,6 +57,12 @@ function connect(displayname::String,screenp::Int32)
     xcb_connection_t(c)
 end
 
+function connect()
+  c = ccall((:xcb_connect, _jl_libxcb), Ptr{Void},
+                (Ptr{Uint8},Ptr{Int32}), C_NULL, C_NULL)
+    xcb_connection_t(c)
+end
+
 function get_setup(c::xcb_connection_t)
 	ccall((:xcb_get_setup, _jl_libxcb), xcb_setup_t,
                 (xcb_connection_t,), c)
@@ -67,7 +74,7 @@ function setup_roots_iterator(s::xcb_setup_t)
 end
 
 function generate_id(c::xcb_connection_t)
-	ccall((:xcb_generate_id, _jl_libxcb), Uint32,
+	ccall((:xcb_generate_id, _jl_libxcb), xcb_window_t,
                 (xcb_connection_t,), c)
 end
 
@@ -109,11 +116,14 @@ function create_window (c::xcb_connection_t,
 
 function test0()
 	a = Int32(0)
-	c = connect("0:0",a)
-	s = setup_roots_iterator(get_setup(c))
+	c = connect()
+  s0 = get_setup(c)
+	s = setup_roots_iterator(s0)
 	sc = s.data
-	i = generate_id(c)
-	create_window(c,0L,i,)
+	id = generate_id(c)
+  #create_window(c,XCB_COPY_FROM_PARENT,i,sc)
+  c,s0,s,sc,win
+  
 end
 
 
