@@ -135,28 +135,43 @@ function test0()
 	
 	c = connect()
   
-  s0 = get_setup(c)
+    s0 = get_setup(c)
   
 	s = setup_roots_iterator(s0)
   
-	sc = unsafe_load(s.data)
+	screen = unsafe_load(s.data)
   
-	id = generate_id(c)
+	win = generate_id(c)
   
-  a = Uint32(0)
-  create_window(c,
-    XCB_COPY_FROM_PARENT,id,sc.root,
-    Int16(0),Int16(0),UInt16(150),UInt16(150),UInt16(10),
-    XCB_WINDOW_CLASS_INPUT_OUTPUT,sc.root_visual,Uint32(0),pointer_from_objref(a))
+    a = Uint32(0)
+    create_window(c,
+        XCB_COPY_FROM_PARENT,win,screen.root,
+        Int16(0),Int16(0),UInt16(150),UInt16(150),UInt16(10),
+        XCB_WINDOW_CLASS_INPUT_OUTPUT,screen.root_visual,Uint32(0),pointer_from_objref(a))
   
   
-  map_window(c,id)
+    map_window(c,win)
 
-  flush(c)
-  c,s0,s,sc,id
+    flush(c)
+    c,screen,win
+end
+
+function screen_allowed_depths_iterator(screen::xcb_screen_t)
+    ccall((:xcb_screen_allowed_depths_iterator, _jl_libxcb), xcb_depth_iterator_t,
+                (xcb_screen_t,), screen)
+end
+
+function depth_next(d::xcb_depth_iterator_t)
+    ccall((:xcb_depth_next, _jl_libxcb), Void,
+                (Ptr{xcb_depth_iterator_t},), &d)
 end
 
 
+function get_visual(c::xcb_connection_t,screen::xcb_screen_t)
+
+    depth_iter = screen_allowed_depths_iterator(screen)
+    
+end
 #  To get the xcb_visualtype_t structure, it's a bit less easy. You have to get the xcb_screen_t structure that you want, get its root_visual member, then iterate over the xcb_depth_ts and the xcb_visualtype_ts, and compare the xcb_visualid_t of these xcb_visualtype_ts: with root_visual:
 
 # xcb_connection_t *c;

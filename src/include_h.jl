@@ -736,7 +736,7 @@ immutable xcb_depth_t
     pad1::Array_4_Uint8
 end
 
-immutable xcb_depth_iterator_t
+type xcb_depth_iterator_t
     data::Ptr{xcb_depth_t}
     rem::Cint
     index::Cint
