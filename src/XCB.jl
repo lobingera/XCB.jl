@@ -64,19 +64,33 @@ function connect()
 end
 
 function get_setup(c::xcb_connection_t)
-	ccall((:xcb_get_setup, _jl_libxcb), xcb_setup_t,
+	ccall((:xcb_get_setup, _jl_libxcb), Ptr{xcb_setup_t},
                 (xcb_connection_t,), c)
 end
 
-function setup_roots_iterator(s::xcb_setup_t)
-	ccall((:xcb_setup_roots_iterator, _jl_libxcb), xcb_screen_iterator_t,
-                (xcb_setup_t,), s)
+function setup_roots_iterator(s::Ptr{xcb_setup_t})
+	s1 = ccall((:xcb_setup_roots_iterator, _jl_libxcb), xcb_screen_iterator_t,
+                (Ptr{xcb_setup_t},), s)
+  xcb_screen_iterator_t(s1)
 end
 
 function generate_id(c::xcb_connection_t)
 	ccall((:xcb_generate_id, _jl_libxcb), xcb_window_t,
                 (xcb_connection_t,), c)
 end
+
+function map_window(c::xcb_connection_t,w::xcb_window_t)
+  ccall((:xcb_map_window, _jl_libxcb), Void,
+                (xcb_connection_t, xcb_window_t), c, w)
+  nothing
+end
+
+function flush(c::xcb_connection_t)
+  ccall((:xcb_flush, _jl_libxcb), Void,
+                (xcb_connection_t,), c)
+  nothing
+end
+
 
 # xcb_void_cookie_t
 # xcb_create_window (xcb_connection_t *c  /**< */,
@@ -103,29 +117,75 @@ function create_window (c::xcb_connection_t,
                    width::uint16_t,    
                    height::uint16_t,    
                    border_width::uint16_t,  
-                   _class::uint16_t,        
+                   _class::uint32_t,        
                    visual::xcb_visualid_t,  
                    value_mask::uint32_t,    
-                   value_list::Ptr{Uint32})
+                   value_list::Ptr{Void})
 	ccall((:xcb_create_window, _jl_libxcb), Void,
-		(Uint8,xcb_window_t,xcb_window_t,Int16,Int16,Uint16,Uint16,Uint16,Uint16,
-			xcb_visualid_t,Uint32,Ptr{Uint32}), c,depth,wid,parent,x,y,width,height,border_width,
+		(xcb_connection_t, Uint8, xcb_window_t, xcb_window_t, Int16, Int16,
+      Uint16, Uint16, Uint16, Uint32,
+			xcb_visualid_t, Uint32, Ptr{Void}), c,depth,wid,parent,x,y,width,height,border_width,
 		_class,visual,value_mask,value_list)
 	nothing
 	end
 
+
+
 function test0()
-	a = Int32(0)
+	
 	c = connect()
-  s0 = get_setup(c)
-	s = setup_roots_iterator(s0)
-	sc = s.data
-	id = generate_id(c)
-  #create_window(c,XCB_COPY_FROM_PARENT,i,sc)
-  c,s0,s,sc,win
   
+  s0 = get_setup(c)
+  
+	s = setup_roots_iterator(s0)
+  
+	sc = unsafe_load(s.data)
+  
+	id = generate_id(c)
+  
+  a = Uint32(0)
+  create_window(c,
+    XCB_COPY_FROM_PARENT,id,sc.root,
+    Int16(0),Int16(0),UInt16(150),UInt16(150),UInt16(10),
+    XCB_WINDOW_CLASS_INPUT_OUTPUT,sc.root_visual,Uint32(0),pointer_from_objref(a))
+  
+  
+  map_window(c,id)
+
+  flush(c)
+  c,s0,s,sc,id
 end
 
+
+#  To get the xcb_visualtype_t structure, it's a bit less easy. You have to get the xcb_screen_t structure that you want, get its root_visual member, then iterate over the xcb_depth_ts and the xcb_visualtype_ts, and compare the xcb_visualid_t of these xcb_visualtype_ts: with root_visual:
+
+# xcb_connection_t *c;
+# xcb_screen_t     *screen;
+# int               screen_nbr;
+# xcb_visualid_t    root_visual = { 0 };
+# xcb_visualtype_t  *visual_type = NULL;    /* the returned visual type */
+
+# /* you init the connection and screen_nbr */
+
+# screen = screen_of_display (c, screen_nbr);
+# if (screen) {
+#   xcb_depth_iterator_t depth_iter;
+
+#   depth_iter = xcb_screen_allowed_depths_iterator (screen);
+#   for (; depth_iter.rem; xcb_depth_next (&depth_iter)) {
+#     xcb_visualtype_iterator_t visual_iter;
+
+#     visual_iter = xcb_depth_visuals_iterator (depth_iter.data);
+#     for (; visual_iter.rem; xcb_visualtype_next (&visual_iter)) {
+#       if (screen->root_visual == visual_iter.data->visual_id) {
+#         visual_type = visual_iter.data;
+#         break;
+#       }
+#     }
+#   }
+# }
+
+# /* visual_type contains now the visual structure, or a NULL visual structure if no screen is found */
 
 
 
