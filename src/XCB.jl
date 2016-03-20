@@ -51,7 +51,7 @@ include("include_manual.jl")
 
 # ...so
 
-function connect(displayname::String,screenp::Int32)
+function connect(displayname::AbstractString,screenp::Int32)
 	c = ccall((:xcb_connect, _jl_libxcb), Ptr{Void},
                 (Ptr{Uint8},Ptr{Int32}), bytestring(displayname), &screenp)
     xcb_connection_t(c)
