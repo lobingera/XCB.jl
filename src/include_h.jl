@@ -798,7 +798,7 @@ immutable xcb_screen_t
     allowed_depths_len::Uint8
 end
 
-immutable xcb_screen_iterator_t
+type xcb_screen_iterator_t
     data::Ptr{xcb_screen_t}
     rem::Cint
     index::Cint

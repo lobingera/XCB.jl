@@ -108,7 +108,7 @@ end
 #                    const uint32_t   *value_list  /**< */);
 
 
-function create_window (c::xcb_connection_t,
+function create_window(c::xcb_connection_t,
                    depth::uint8_t,      
                    wid::xcb_window_t,   
                    parent::xcb_window_t,   
@@ -166,12 +166,51 @@ function depth_next(d::xcb_depth_iterator_t)
                 (Ptr{xcb_depth_iterator_t},), &d)
 end
 
-
-function get_visual(c::xcb_connection_t,screen::xcb_screen_t)
-
-    depth_iter = screen_allowed_depths_iterator(screen)
-    
+function screen_next(s::xcb_screen_iterator_t)
+    ccall((:xcb_screen_next, _jl_libxcb), Void,
+                (Ptr{xcb_screen_iterator_t},), &s)
 end
+
+
+function get_visual(c::xcb_connection_t, visual::xcb_visualid_t)
+
+    screen_iter = setup_roots_iterator(get_setup(c))
+    display(screen_iter)
+
+    while screen_iter.rem > 0
+        depth_iter = screen_allowed_depths_iterator(unsafe_load(screen_iter.data))
+   
+        while depth_iter.rem > 0
+            display(depth_iter)
+
+            depth_next(depth_iter)
+        end
+        display(screen_iter)
+        screen_next(screen_iter)
+    end
+
+    0
+
+end
+# static xcb_visualtype_t *find_visual(xcb_connection_t *c, xcb_visualid_t visual)
+# {
+#   xcb_screen_iterator_t screen_iter = xcb_setup_roots_iterator(xcb_get_setup(c));
+  
+#   for (; screen_iter.rem; xcb_screen_next(&screen_iter)) {
+#     xcb_depth_iterator_t depth_iter = xcb_screen_allowed_depths_iterator(screen_iter.data);
+#     for (; depth_iter.rem; xcb_depth_next(&depth_iter)) {
+#       xcb_visualtype_iterator_t visual_iter = xcb_depth_visuals_iterator(depth_iter.data);
+#       for (; visual_iter.rem; xcb_visualtype_next(&visual_iter))
+#         if (visual == visual_iter.data->visual_id)
+#           return visual_iter.data;
+#     }
+#   }
+
+#   return NULL;
+# }
+
+
+
 #  To get the xcb_visualtype_t structure, it's a bit less easy. You have to get the xcb_screen_t structure that you want, get its root_visual member, then iterate over the xcb_depth_ts and the xcb_visualtype_ts, and compare the xcb_visualid_t of these xcb_visualtype_ts: with root_visual:
 
 # xcb_connection_t *c;
