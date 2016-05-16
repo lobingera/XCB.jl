@@ -17,3 +17,4 @@ function cairo_xcb_surface_create(connection::xcb_connection_t, drawable::xcb_dr
                 &connection, drawable, &visual, width, height)
     Cairo.CairoSurface(ptr, width, height)
 end
+
