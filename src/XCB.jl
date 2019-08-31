@@ -53,13 +53,13 @@ include("include_manual.jl")
 
 function connect(displayname::AbstractString,screenp::Int32)
 	c = ccall((:xcb_connect, _jl_libxcb), Ptr{Void},
-                (Ptr{Uint8},Ptr{Int32}), bytestring(displayname), &screenp)
+                (Ptr{UInt8},Ptr{Int32}), bytestring(displayname), &screenp)
     xcb_connection_t(c)
 end
 
 function connect()
   c = ccall((:xcb_connect, _jl_libxcb), Ptr{Void},
-                (Ptr{Uint8},Ptr{Int32}), C_NULL, C_NULL)
+                (Ptr{UInt8},Ptr{Int32}), C_NULL, C_NULL)
     xcb_connection_t(c)
 end
 
@@ -122,9 +122,9 @@ function create_window(c::xcb_connection_t,
                    value_mask::uint32_t,    
                    value_list::Ptr{Void})
 	ccall((:xcb_create_window, _jl_libxcb), Void,
-		(xcb_connection_t, Uint8, xcb_window_t, xcb_window_t, Int16, Int16,
-      Uint16, Uint16, Uint16, Uint32,
-			xcb_visualid_t, Uint32, Ptr{Void}), c,depth,wid,parent,x,y,width,height,border_width,
+		(xcb_connection_t, UInt8, xcb_window_t, xcb_window_t, Int16, Int16,
+      UInt16, UInt16, UInt16, UInt32,
+			xcb_visualid_t, UInt32, Ptr{Void}), c,depth,wid,parent,x,y,width,height,border_width,
 		_class,visual,value_mask,value_list)
 	nothing
 	end
@@ -143,11 +143,11 @@ function test0()
   
 	win = generate_id(c)
   
-    a = Uint32(0)
+    a = UInt32(0)
     create_window(c,
         XCB_COPY_FROM_PARENT,win,screen.root,
         Int16(0),Int16(0),UInt16(150),UInt16(150),UInt16(10),
-        XCB_WINDOW_CLASS_INPUT_OUTPUT,screen.root_visual,Uint32(0),pointer_from_objref(a))
+        XCB_WINDOW_CLASS_INPUT_OUTPUT,screen.root_visual,UInt32(0),pointer_from_objref(a))
   
   
     map_window(c,win)
